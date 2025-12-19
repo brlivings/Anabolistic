@@ -1,35 +1,80 @@
-"use client";
+'use client';
 
-import { useEffect } from "react";
-import { useSearchParams, useRouter } from "next/navigation";
-import { Container, Card, Button } from "../../components/ui";
+import React, { Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
 
-export default function CopyPage() {
+function CopyInner() {
   const sp = useSearchParams();
-  const router = useRouter();
-  const text = sp.get("text") ?? "";
-
-  useEffect(() => {
-    (async () => {
-      try {
-        await navigator.clipboard.writeText(text);
-      } catch {}
-    })();
-  }, [text]);
+  const text = sp.get('text') ?? '';
+  const redirect = sp.get('redirect') ?? '';
 
   return (
-    <Container className="py-20">
-      <Card className="max-w-xl">
-        <h1 className="text-2xl font-bold">Copied</h1>
-        <p className="mt-2 text-white/70">If your browser blocked clipboard access, you can manually copy below:</p>
-        <div className="mt-4 rounded-xl border border-gold-500/20 bg-white/5 p-3 font-mono text-xs break-all">
-          {text}
-        </div>
-        <div className="mt-6 flex gap-3">
-          <Button onClick={() => router.back()}>Go back</Button>
-          <Button href="/" variant="secondary">Home</Button>
-        </div>
-      </Card>
-    </Container>
+    <main style={{ padding: 24, fontFamily: 'system-ui' }}>
+      <h1 style={{ fontSize: 22, fontWeight: 700 }}>Copy</h1>
+
+      <p style={{ marginTop: 12, opacity: 0.8 }}>
+        This page copies text passed in the URL.
+      </p>
+
+      <textarea
+        value={text}
+        readOnly
+        style={{
+          width: '100%',
+          height: 180,
+          marginTop: 12,
+          padding: 12,
+          borderRadius: 10,
+          border: '1px solid #333',
+          background: '#0b0b0b',
+          color: '#fff',
+        }}
+      />
+
+      <div style={{ marginTop: 12, display: 'flex', gap: 10 }}>
+        <button
+          onClick={async () => {
+            await navigator.clipboard.writeText(text);
+            if (redirect) window.location.href = redirect;
+          }}
+          style={{
+            padding: '10px 14px',
+            borderRadius: 10,
+            border: '1px solid #333',
+            background: '#111',
+            color: '#fff',
+            cursor: 'pointer',
+          }}
+        >
+          Copy to clipboard
+        </button>
+
+        {redirect ? (
+          <a
+            href={redirect}
+            style={{
+              padding: '10px 14px',
+              borderRadius: 10,
+              border: '1px solid #333',
+              background: '#0b0b0b',
+              color: '#fff',
+              textDecoration: 'none',
+              display: 'inline-flex',
+              alignItems: 'center',
+            }}
+          >
+            Back
+          </a>
+        ) : null}
+      </div>
+    </main>
+  );
+}
+
+export default function CopyPage() {
+  return (
+    <Suspense fallback={<div style={{ padding: 24 }}>Loading…</div>}>
+      <CopyInner />
+    </Suspense>
   );
 }
